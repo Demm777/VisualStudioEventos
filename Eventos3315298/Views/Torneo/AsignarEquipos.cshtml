@@ -1,0 +1,53 @@
+﻿<!-- import torneoEquipos -->
+@model Eventos3315298.Models.TorneoEquiposViewModel
+
+@{
+    ViewData["Titulo"] = "Asignar Equipos";
+}
+
+<h1>Asignar Equipos</h1>
+<h3>Torneo: @Model.TorneoNombre</h3>
+<hr />
+<!-- Nombre como metodo del controller -->
+<form asp-action="AsignarEquipos" method="post">
+    <!-- Manejar campos ocultos para Torneo/EquipoId -->
+    <input type="hidden" asp-for="TorneoId" />
+    <input type="hidden" asp-for="TorneoNombre" />
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white">
+            Seleccione los equipos participantes
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Inscribir</th>
+                            <th>Nombre del equipo</th>
+                            <th>Disciplina</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for(int i=0; i<Model.EquiposDisponibles.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="hidden" asp-for="EquiposDisponibles[i].EquipoId" />
+                                        <input type="hidden" asp-for="EquiposDisponibles[i].NombreEquipo" />
+                                        <input type="checkbox" asp-for="EquiposDisponibles[i].IsSelected" 
+                                                class="form-check-input"/>
+                                    </td>
+                                    <td>@Model.EquiposDisponibles[i].NombreEquipo</td>
+                                    <td>@Model.EquiposDisponibles[i].Disciplina</td>
+                                </tr>
+                            }
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div>
+        <input type="submit" value="Guardar" class="btn btn-success" />
+        <a asp-action="Index" class="btn btn-warning">Cancelar</a> 
+    </div>
+</form>

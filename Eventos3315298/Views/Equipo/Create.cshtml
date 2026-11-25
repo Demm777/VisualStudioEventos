@@ -1,0 +1,44 @@
+@model Eventos3315298.Models.Equipo
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Equipo</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Nombre" class="control-label"></label>
+                <input asp-for="Nombre" class="form-control" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Disciplina" class="control-label"></label>
+                <input asp-for="Disciplina" class="form-control" />
+                <span asp-validation-for="Disciplina" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Localidad" class="control-label"></label>
+                <input asp-for="Localidad" class="form-control" />
+                <span asp-validation-for="Localidad" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EntrenadorId" class="control-label">Entrenador</label>
+                <select asp-for="EntrenadorId" class="form-control" asp-items="ViewBag.EntrenadorId">
+                    <option value=""> - Seleccione un Entrenador - </option>
+                </select>
+                <span asp-validation-for="EntrenadorId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>

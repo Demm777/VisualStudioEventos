@@ -1,0 +1,262 @@
+﻿using Eventos3315298.Data;
+using Eventos3315298.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+
+namespace Eventos3315298.Controllers
+{
+    public class TorneoController : Controller
+    {
+        private readonly Eventos3315298Context _context;
+
+        public TorneoController(Eventos3315298Context context)
+        {
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            List<Torneo> torneos = await _context.Torneos
+                .Include(t => t.Municipio)
+                .ToListAsync();
+
+            return View(torneos);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            //trae toda la lista de municipios
+            ViewBag.MunicipioId= new SelectList(await _context.Municipios.ToListAsync(),
+                                "MunicipioId","Nombre");
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Torneo torneo)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.MunicipioId = new SelectList(await _context.Municipios.ToListAsync(),
+                                "MunicipioId", "Nombre", torneo.MunicipioId);
+                return View(torneo);
+            }
+            try
+            {
+                _context.Torneos.Add(torneo);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            catch (DbUpdateException e)
+            {
+                if(e.InnerException is SqlException sqlE && (sqlE.Number == 2627 || sqlE.Number == 2601))
+                {
+                    if (sqlE.Message.Contains("IX_Torneos_Nombre"))
+                    {
+                        ModelState.AddModelError(nameof(torneo.Nombre), "ya existe un Torneo con este nombre");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Error general en la base de datos");
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Ocurrio un error inesperado");
+                }
+            }
+            ViewBag.MunicipioId = new SelectList(await _context.Municipios.ToListAsync(),
+                               "MunicipioId", "Nombre", torneo.MunicipioId);
+            return View(torneo);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            var torneo = await _context.Torneos.FindAsync(id);
+            if (torneo==null)
+            {
+                TempData["Error"] = "Torneo no encontrado";
+                return RedirectToAction(nameof(Index));
+            }
+            ViewBag.MunicipioId = new SelectList(await _context.Municipios.ToListAsync(),
+                              "MunicipioId", "Nombre", torneo.MunicipioId);
+            return View(torneo);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Torneo torneo)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.MunicipioId = new SelectList(await _context.Municipios.ToListAsync(),
+                                "MunicipioId", "Nombre", torneo.MunicipioId);
+                return View(torneo);
+            }
+            try
+            {
+                _context.Torneos.Update(torneo);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException is SqlException sqlE && (sqlE.Number == 2627 || sqlE.Number == 2601))
+                {
+                    if (sqlE.Message.Contains("IX_Torneos_Nombre"))
+                    {
+                        ModelState.AddModelError(nameof(torneo.Nombre), "ya existe un Torneo con este nombre");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Error general en la base de datos");
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Ocurrio un error inesperado");
+                }
+            }
+            ViewBag.MunicipioId = new SelectList(await _context.Municipios.ToListAsync(),
+                               "MunicipioId", "Nombre", torneo.MunicipioId);
+            return View(torneo);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            var torneo = await _context.Torneos.FindAsync(id);
+            if (torneo == null)
+            {
+                TempData["Error"] = "Torneo no encontrado";
+                return RedirectToAction(nameof(Index));
+            }
+            ViewBag.MunicipioId = new SelectList(await _context.Municipios.ToListAsync(),
+                              "MunicipioId", "Nombre", torneo.MunicipioId);
+            return View(torneo);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var torneo = await _context.Torneos.FindAsync(id);
+            if(torneo == null)
+            {
+                TempData["Error"] = "Torneo no existe";
+                return RedirectToAction(nameof(Index));
+            }
+            try
+            {
+                _context.Torneos.Remove(torneo);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException is SqlException sqlE && sqlE.Number == 547)
+                {
+                    TempData["Error"] = "No se puede eliminar, Torneo con registros asociados";
+                }
+                else
+                {
+                    TempData["Error"] = "Error inesperado, intente nuevamente";
+                }
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        //Registrar equipo en torneo
+        [HttpGet]
+        public async Task<IActionResult> AsignarEquipos(int? id)
+        {
+            if (id==null)
+            {
+                TempData["Error"] = "No se especifico el ID del torneo";
+                return RedirectToAction(nameof(Index));
+            }
+            //buscar los datos del torneo
+            var torneo = await _context.Torneos
+                .Include(t => t.Equipos)
+                // si el Id que llega es igual a este: que incluya todos los equipos
+                .FirstOrDefaultAsync(t=> t.TorneoId==id);
+            if (torneo == null)
+            {
+                TempData["Error"] = "Tonreo no encontrado";
+                return RedirectToAction(nameof(Index));
+            }
+            // si no fue null, obtener todos los equipos almacenados en db
+            var todosLosEquipos = await _context.Equipos.ToListAsync();
+
+            // armar el objeto de tipo TorneoEquiposViewModel para enviarlo a la vista
+
+            var viewModel = new TorneoEquiposViewModel
+            {
+                TorneoId = torneo.TorneoId,
+                TorneoNombre = torneo.Nombre,
+                EquiposDisponibles = todosLosEquipos.Select(e => new EquipoCheckBoxItem
+                {
+                    EquipoId = e.EquipoId,
+                    NombreEquipo = e.Nombre,
+                    Disciplina = e.Disciplina,
+                    // coloca el estado 'seleccionado' o 'no seleccionado'
+                    IsSelected = torneo.Equipos.Any(eq => eq.EquipoId == e.EquipoId)
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AsignarEquipos(TorneoEquiposViewModel model)
+        {
+            //Buscar el Torneo con sus Equipos Inscritos
+            var torneo = await _context.Torneos
+                .Include(t => t.Equipos)
+                .FirstOrDefaultAsync(t=> t.TorneoId == model.TorneoId);
+            if (torneo == null)
+            {
+                TempData["Error"] = "Torneo no encontrado";
+                return RedirectToAction("Index");
+            }
+
+            //Mostrar como seleccionados los Equipos que pertenecen al torneo
+            var idsEquiposSeleccionados = model.EquiposDisponibles
+                .Where(e => e.IsSelected)
+                .Select(e => e.EquipoId)
+                .ToList();
+            torneo.Equipos.Clear(); //refresca/actualiza la seleccion
+
+            //modificar la seleccion (quitar o poner Equipos en el Torneo)
+            if (idsEquiposSeleccionados.Any())
+            {
+                var equiposSeleccionados = await _context.Equipos
+                    .Where(e => idsEquiposSeleccionados.Contains(e.EquipoId))
+                    .ToListAsync();
+
+                //Al torneo le adicionamos Equipo
+                foreach(var equipo in equiposSeleccionados)
+                {
+                    torneo.Equipos.Add(equipo);
+                }
+            }
+            await _context.SaveChangesAsync();
+            TempData["mensaje"] = "Equipos del Torneo actualizados con exito";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

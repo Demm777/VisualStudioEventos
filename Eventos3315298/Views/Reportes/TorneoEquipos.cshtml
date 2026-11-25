@@ -1,0 +1,88 @@
+﻿@model Eventos3315298.Models.DTOs.TorneoEquiposReporteDTO
+
+@{
+    ViewData["Title"] = "Reporte de Equipos por Torneo";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Reporte Oficial de Equipos</h2>
+            <p class="text-muted">Listado detallado de participantes e información de entrenadores.</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary me-2">← Volver al selector</a>
+            <a asp-action="ExportarExcelTorneoEquipos" asp-route-id="@Model.TorneoId" class="btn btn-outline-success me-2">Descargar Excel</a>
+            <button onclick="window.print()" class="btn btn-primary">🖨️ Imprimir / Guardar PDF</button>
+        </div>
+    </div>
+
+    <!-- Tarjeta con la Información General del Torneo -->
+    <div class="card shadow-sm mb-4 border-primary">
+        <div class="card-body">
+            <h4 class="card-title text-primary fw-bold">@Model.NombreTorneo</h4>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Categoría:</strong> <span class="badge bg-secondary">@Model.CategoriaTorneo</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Municipio Sede:</strong> @Model.MunicipioTorneo</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Equipos Inscritos -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Equipos Inscritos (@Model.EquiposInscritos.Count)</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Equipo</th>
+                        <th>Disciplina</th>
+                        <th>Entrenador Responsable</th>
+                        <th>Celular</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.EquiposInscritos.Any())
+                    {
+                        @foreach (var equipo in Model.EquiposInscritos)
+                        {
+                            <tr>
+                                <td class="fw-bold">@equipo.NombreEquipo</td>
+                                <td>@equipo.Disciplina</td>
+                                <td>@equipo.NombreEntrenador</td>
+                                <td>@equipo.CelularEntrenador</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No hay equipos inscritos registrados para este torneo actualmente.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos rápidos para optimizar la impresión en papel o PDF -->
+<style>
+    @@media print {
+        .btn, nav, footer {
+            display: none !important;
+        }
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>

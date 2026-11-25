@@ -1,0 +1,86 @@
+@model IEnumerable<Eventos3315298.Models.Entrenador>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Gestion de Entrenadores</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-success">Create New</a>
+</p>
+
+@* Capturar los errores enviados con el TempData *@
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Documento)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Nombres)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Apellidos)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Correo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Celular)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Rh)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Eps)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(model => item.Documento)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Nombres)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Apellidos)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Correo)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Celular)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Rh)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Eps)
+            </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.EntrenadorId" class="btn btn-primary">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.EntrenadorId" class="btn btn-info">Details</a>
+                    <!-- formulario para eliminar con js -->
+                    <form asp-action="Delete" asp-route-id="@item.EntrenadorId" method="post" style="display:inline;"
+                          onsubmit="return confirm('Estas seguros de eliminar el registro?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+        </tr>
+}
+    </tbody>
+</table>
